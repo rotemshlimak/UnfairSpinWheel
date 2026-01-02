@@ -66,6 +66,7 @@ export const CongratulationSounds: Ref<{ label: string; items: AudioSetting[] }[
 export const LabelLength = ref<number>(0.75);
 
 export const Fairmode = ref<boolean>(false);
+export const SelectedWinner = ref<string | undefined>();
 
 export class SettingService {
   private db: PouchDB.Database<ISetting> = new PouchDB('setting');
@@ -80,6 +81,27 @@ export class SettingService {
     await this.initTickSound();
     await this.initCongratulationSound();
     await this.initFairmode();
+    await this.initSelectedWinner();
+  };
+
+  private initSelectedWinner = async () => {
+    try {
+      SelectedWinner.value = (await this.getSetting('selectedWinner')).value;
+    } catch (e) {
+      SelectedWinner.value = undefined;
+      // Don't await
+      this.addSetting({ key: 'selectedWinner', value: SelectedWinner.value });
+    }
+
+    watch(SelectedWinner, async (newValue) => {
+      try {
+        const doc = await this.getSetting('selectedWinner');
+        doc.value = newValue;
+        await this.updateSetting(doc);
+      } catch (e) {
+        await this.addSetting({ key: 'selectedWinner', value: newValue });
+      }
+    });
   };
 
   private prefetchAudio = (audioSetting: AudioSetting | undefined) => {

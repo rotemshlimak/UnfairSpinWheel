@@ -41,7 +41,7 @@ import { ref, onMounted, inject, watch } from 'vue';
 import random from 'random';
 import { Wheel, type WheelProps } from 'spin-wheel';
 import { useDialog } from 'primevue/usedialog';
-import { TickSound, LabelLength } from '@/services/SettingService';
+import { TickSound, LabelLength, SelectedWinner } from '@/services/SettingService';
 import { GroupLabel, GroupLabels, ItemService, Items } from '@/services/ItemService';
 import CongratulationDialog from '@/components/CongratulationDialog.vue';
 
@@ -106,6 +106,14 @@ const playSound = () => {
 
 const spin = () => {
   if (!wheel) return;
+  // If a preset winner is selected, spin to that item deterministically.
+    if (SelectedWinner.value) {
+    const index = (Items.value || []).findIndex((i) => i._id === SelectedWinner.value);
+    if (index >= 0) {
+      wheel.spinToItem(index, 10000, true, 6);
+      return;
+    }
+  }
 
   wheel.onCurrentIndexChange = () => {
     if (!wheel) return;

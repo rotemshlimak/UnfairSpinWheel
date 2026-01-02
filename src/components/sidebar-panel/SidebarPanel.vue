@@ -203,6 +203,18 @@
               }"
             />
           </div>
+          <div class="col-12">
+            <label for="dd-winner" class="block mb-2">Preset Winner</label>
+            <Dropdown
+              v-model="SelectedWinner"
+              inputId="dd-winner"
+              :options="itemOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="(none)"
+              class="w-full"
+            />
+          </div>
         </div>
       </TabPanel>
     </TabView>
@@ -281,7 +293,8 @@ import {
   LabelLength,
   CongratulationSound,
   CongratulationSounds,
-  Fairmode
+  Fairmode,
+  SelectedWinner
 } from '@/services/SettingService';
 import ItemInputGroup from '@/components/sidebar-panel/ItemInputGroup.vue';
 import type { IItem } from '@/interface/IItem';
@@ -357,6 +370,15 @@ const customBase64Uploader = async (
     }
   };
 };
+
+const itemOptions = ref<{ label: string; value: string }[]>([]);
+
+watch(Items, (newItems) => {
+  itemOptions.value = [
+    { label: '(none)', value: '' },
+    ...(newItems || []).map((i) => ({ label: i.label, value: i._id }))
+  ];
+});
 
 const toggleBulkEditMode = async ($event: Event) => {
   if (!bulkEditMode.value && Fairmode.value && $event.target instanceof HTMLElement) {
