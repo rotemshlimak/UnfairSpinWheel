@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, watch } from 'vue';
+import { ref, onMounted, inject, watch, onBeforeUnmount } from 'vue';
 import random from 'random';
 import { Wheel, type WheelProps } from 'spin-wheel';
 import { useDialog } from 'primevue/usedialog';
@@ -104,10 +104,50 @@ const playSound = () => {
   audio.play();
 };
 
+// Background music while spinning
+const musicAudio = ref<HTMLAudioElement | null>(null);
+const createMusicAudio = () => {
+  const src = '/sound/start-13691.mp3';
+  const a = new Audio(src);
+  a.loop = true;
+  a.volume = 0.25;
+  return a;
+};
+
+const playMusic = async () => {
+  if (!musicAudio.value) musicAudio.value = createMusicAudio();
+  try {
+    await musicAudio.value.play();
+  } catch (e) {
+    // autoplay may be blocked; ignore
+  }
+};
+
+const stopMusic = () => {
+  if (!musicAudio.value) return;
+  const a = musicAudio.value;
+  // Fade out quickly
+  const fade = setInterval(() => {
+    if (!a) return clearInterval(fade);
+    if (a.volume > 0.05) {
+      a.volume = Math.max(0, a.volume - 0.05);
+    } else {
+      a.pause();
+      a.currentTime = 0;
+      a.volume = 0.25;
+      clearInterval(fade);
+    }
+  }, 60);
+};
+
 const spin = () => {
   if (!wheel) return;
+
+  // start background music for this spin
+  playMusic();
+
   // If a preset winner is selected, spin to that item deterministically.
-    if (SelectedWinner.value) {
+  if (SelectedWinner.value) {
     const index = (Items.value || []).findIndex((i) => i._id === SelectedWinner.value);
     if (index >= 0) {
       wheel.spinToItem(index, 10000, true, 6);
@@ -174,7 +214,7 @@ onMounted(() => {
   wheel.spin(10);
 
   wheel.onRest = ($event) => {
-    stopAndClearSound;
+    stopMusic();
     openCongratulationDialog($event);
   };
 
@@ -189,6 +229,15 @@ onMounted(() => {
   setTimeout(() => {
     wheel!.itemLabelRadiusMax = 1 - LabelLength.value;
   }, 50);
+});
+
+onBeforeUnmount(() => {
+  if (musicAudio.value) {
+    try {
+      musicAudio.value.pause();
+    } catch (e) {}
+    musicAudio.value = null;
+  }
 });
 </script>
 
