@@ -68,6 +68,9 @@ export const LabelLength = ref<number>(0.75);
 export const Fairmode = ref<boolean>(false);
 export const SelectedWinner = ref<string | undefined>();
 
+// Spin duration in seconds
+export const SpinDuration = ref<number>(10);
+
 export class SettingService {
   private db: PouchDB.Database<ISetting> = new PouchDB('setting');
 
@@ -81,7 +84,13 @@ export class SettingService {
     await this.initTickSound();
     await this.initCongratulationSound();
     await this.initFairmode();
+    await this.initSpinDuration();
     await this.initSelectedWinner();
+  };
+
+  private clampSpinDuration = (value: number | undefined | null): number => {
+    const v = typeof value === 'number' && !isNaN(value) ? value : 10;
+    return Math.min(60, Math.max(5, v));
   };
 
   private initSelectedWinner = async () => {
@@ -119,6 +128,29 @@ export class SettingService {
     // Actively preload audio files
     const audio = new Audio(src);
     audio.preload = 'auto';
+  };
+
+  private initSpinDuration = async () => {
+    try {
+      SpinDuration.value = this.clampSpinDuration((await this.getSetting('spinDuration')).value);
+    } catch (e) {
+      SpinDuration.value = 10;
+      // Don't await
+      this.addSetting({ key: 'spinDuration', value: SpinDuration.value });
+    }
+
+    watch(SpinDuration, async (newValue) => {
+      const clamped = this.clampSpinDuration(newValue);
+      SpinDuration.value = clamped;
+
+      try {
+        const doc = await this.getSetting('spinDuration');
+        doc.value = clamped;
+        await this.updateSetting(doc, true);
+      } catch (e) {
+        await this.addSetting({ key: 'spinDuration', value: clamped });
+      }
+    });
   };
 
   private initLabelLength = async () => {

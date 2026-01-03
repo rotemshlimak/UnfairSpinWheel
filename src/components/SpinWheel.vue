@@ -41,7 +41,7 @@ import { ref, onMounted, inject, watch } from 'vue';
 import random from 'random';
 import { Wheel, type WheelProps } from 'spin-wheel';
 import { useDialog } from 'primevue/usedialog';
-import { TickSound, LabelLength, SelectedWinner } from '@/services/SettingService';
+import { TickSound, LabelLength, SelectedWinner, SpinDuration } from '@/services/SettingService';
 import { GroupLabel, GroupLabels, ItemService, Items } from '@/services/ItemService';
 import CongratulationDialog from '@/components/CongratulationDialog.vue';
 
@@ -106,37 +106,41 @@ const playSound = () => {
 
 const spin = () => {
   if (!wheel) return;
-  // If a preset winner is selected, spin to that item deterministically.
-    if (SelectedWinner.value) {
-    const index = (Items.value || []).findIndex((i) => i._id === SelectedWinner.value);
-    if (index >= 0) {
-      wheel.spinToItem(index, 10000, true, 6);
-      return;
-    }
-  }
+  const items = Items.value || [];
+  if (!items.length) return;
+
+  const durationMs = Math.min(60000, Math.max(5000, (SpinDuration.value ?? 10) * 1000));
 
   wheel.onCurrentIndexChange = () => {
     if (!wheel) return;
-
     playSound();
-
-    // Change rotation resistance based on current speed.
-    // Provide a more entertaining performance.
-    switch (true) {
-      case wheel.rotationSpeed < 400:
-        wheel.rotationResistance = -100;
-        break;
-      case wheel.rotationSpeed < 100:
-        wheel.rotationResistance = -30;
-        break;
-      case wheel.rotationSpeed < 30:
-        wheel.rotationResistance = -10;
-        break;
-    }
   };
 
-  wheel.rotationResistance = -400;
-  wheel.spin(wheel.rotationSpeed + random.int(1000, 1600));
+  let targetIndex = -1;
+
+  // If a preset winner is selected, spin to that item deterministically.
+  if (SelectedWinner.value) {
+    targetIndex = items.findIndex((i) => i._id === SelectedWinner.value);
+  }
+
+  // If no preset winner or not found, choose a random item based on weight.
+  if (targetIndex < 0) {
+    const totalWeight = items.reduce((sum, item) => sum + (item.weight || 1), 0);
+    let r = Math.random() * totalWeight;
+
+    for (let i = 0; i < items.length; i++) {
+      const w = items[i].weight || 1;
+      if (r < w) {
+        targetIndex = i;
+        break;
+      }
+      r -= w;
+    }
+
+    if (targetIndex < 0) targetIndex = 0;
+  }
+
+  wheel.spinToItem(targetIndex, durationMs, true, 6);
 };
 
 const dialog = useDialog();

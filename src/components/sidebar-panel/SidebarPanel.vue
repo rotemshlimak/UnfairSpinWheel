@@ -204,6 +204,18 @@
             />
           </div>
           <div class="col-12">
+            <label for="in-spinDuration" class="block mb-2">Spin Duration (seconds)</label>
+            <InputNumber
+              v-model="SpinDuration"
+              inputId="in-spinDuration"
+              :min="5"
+              :max="60"
+              :step="1"
+              class="w-full"
+            />
+            <small class="text-color-secondary">Choose between 5 and 60 seconds.</small>
+          </div>
+          <div class="col-12">
             <label for="dd-winner" class="block mb-2">Preset Winner</label>
             <Dropdown
               v-model="SelectedWinner"
@@ -294,7 +306,8 @@ import {
   CongratulationSound,
   CongratulationSounds,
   Fairmode,
-  SelectedWinner
+  SelectedWinner,
+  SpinDuration
 } from '@/services/SettingService';
 import ItemInputGroup from '@/components/sidebar-panel/ItemInputGroup.vue';
 import type { IItem } from '@/interface/IItem';
