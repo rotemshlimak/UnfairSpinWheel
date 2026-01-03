@@ -39,8 +39,8 @@ export const CongratulationSounds: Ref<{ label: string; items: AudioSetting[] }[
   {
     label: 'Sound Effect',
     items: [
-      { label: 'TA-DA!', value: 'tada-fanfare-a-6313.mp3' },
       { label: 'Crowd Cheering', value: 'crowd-cheering-143103.mp3' },
+      { label: 'TA-DA!', value: 'tada-fanfare-a-6313.mp3' },
       { label: 'Bicycle Horn', value: 'bicycle-horn-7126.mp3' },
       { label: 'DJ Airhorn Sound', value: 'dj-airhorn-sound-39405.mp3' }
     ]
