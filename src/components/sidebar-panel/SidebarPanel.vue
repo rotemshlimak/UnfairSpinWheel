@@ -205,15 +205,15 @@
           </div>
           <div class="col-12">
             <label for="in-spinDuration" class="block mb-2">Spin Duration (seconds)</label>
-            <InputNumber
+            <Dropdown
               v-model="SpinDuration"
               inputId="in-spinDuration"
-              :min="5"
-              :max="60"
-              :step="1"
+              :options="spinDurationOptions"
+              optionLabel="label"
+              optionValue="value"
               class="w-full"
             />
-            <small class="text-color-secondary">Choose between 5 and 60 seconds.</small>
+            <small class="text-color-secondary">Pick a preset duration.</small>
           </div>
           <div class="col-12">
             <label for="dd-winner" class="block mb-2">Preset Winner</label>
@@ -385,6 +385,18 @@ const customBase64Uploader = async (
 };
 
 const itemOptions = ref<{ label: string; value: string }[]>([]);
+
+const spinDurationOptions = [
+  { label: '5 seconds', value: 5 },
+  { label: '7 seconds', value: 7 },
+  { label: '10 seconds', value: 10 },
+  { label: '12 seconds', value: 12 },
+  { label: '15 seconds', value: 15 },
+  { label: '20 seconds', value: 20 },
+  { label: '30 seconds', value: 30 },
+  { label: '45 seconds', value: 45 },
+  { label: '60 seconds', value: 60 }
+];
 
 watch(Items, (newItems) => {
   itemOptions.value = [
