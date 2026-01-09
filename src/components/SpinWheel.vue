@@ -109,7 +109,12 @@ const spin = () => {
   const items = Items.value || [];
   if (!items.length) return;
 
-  const durationMs = Math.min(60000, Math.max(5000, (SpinDuration.value ?? 10) * 1000));
+  const durationSec = Math.min(60, Math.max(5, SpinDuration.value ?? 10));
+  const durationMs = durationSec * 1000;
+
+  // Keep average speed consistent across duration choices by scaling revolutions.
+  // Baseline: 10s => 6 revolutions (0.6 rev/s).
+  const revolutions = Math.max(1, Math.round(durationSec * 0.6));
 
   wheel.onCurrentIndexChange = () => {
     if (!wheel) return;
@@ -140,7 +145,7 @@ const spin = () => {
     if (targetIndex < 0) targetIndex = 0;
   }
 
-  wheel.spinToItem(targetIndex, durationMs, true, 6);
+  wheel.spinToItem(targetIndex, durationMs, true, revolutions);
 };
 
 const dialog = useDialog();
