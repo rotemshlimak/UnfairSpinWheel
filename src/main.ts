@@ -9,6 +9,7 @@
  */
 if (
   !window.location.hostname.endsWith('spin-wheel.click') &&
+  !window.location.hostname.endsWith('github.io') && // allow GitHub Pages
   window.location.hostname !== 'localhost'
 ) {
   window.location.href =
