@@ -5,8 +5,10 @@
  * I have noticed that there are malicious individuals who steal our website content and add malicious code to collect user location and send back to the their own server.
  * To protect against such actions, we will implement a mechanism to verify the host when the webpage is being loaded, and if necessary, redirect users to the appropriate website when they access the proxy site.
  * Please be aware that you are solely permitted to distribute this project under the "AGPL-3.0" license.
- * If you have adhered to the terms of this license, you are welcome to make modifications to this section as needed.
- */
+ * Ifdsff you have adhered to the terms of this license, you are welcome to make modifications to this section as needed.
+ */  
+
+
 
 import { createApp } from 'vue';
 import App from '@/App.vue';
