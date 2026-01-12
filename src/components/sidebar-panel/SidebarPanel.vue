@@ -203,6 +203,30 @@
               }"
             />
           </div>
+          <div class="col-12">
+            <label for="in-spinDuration" class="block mb-2">Spin Duration (seconds)</label>
+            <Dropdown
+              v-model="SpinDuration"
+              inputId="in-spinDuration"
+              :options="spinDurationOptions"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+            />
+            <small class="text-color-secondary">Pick a preset duration.</small>
+          </div>
+          <div class="col-12">
+            <label for="dd-winner" class="block mb-2">Preset Winner</label>
+            <Dropdown
+              v-model="SelectedWinner"
+              inputId="dd-winner"
+              :options="itemOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="(none)"
+              class="w-full"
+            />
+          </div>
         </div>
       </TabPanel>
     </TabView>
@@ -281,7 +305,9 @@ import {
   LabelLength,
   CongratulationSound,
   CongratulationSounds,
-  Fairmode
+  Fairmode,
+  SelectedWinner,
+  SpinDuration
 } from '@/services/SettingService';
 import ItemInputGroup from '@/components/sidebar-panel/ItemInputGroup.vue';
 import type { IItem } from '@/interface/IItem';
@@ -357,6 +383,27 @@ const customBase64Uploader = async (
     }
   };
 };
+
+const itemOptions = ref<{ label: string; value: string }[]>([]);
+
+const spinDurationOptions = [
+  { label: '5 seconds', value: 5 },
+  { label: '7 seconds', value: 7 },
+  { label: '10 seconds', value: 10 },
+  { label: '12 seconds', value: 12 },
+  { label: '15 seconds', value: 15 },
+  { label: '20 seconds', value: 20 },
+  { label: '30 seconds', value: 30 },
+  { label: '45 seconds', value: 45 },
+  { label: '60 seconds', value: 60 }
+];
+
+watch(Items, (newItems) => {
+  itemOptions.value = [
+    { label: '(none)', value: '' },
+    ...(newItems || []).map((i) => ({ label: i.label, value: i._id }))
+  ];
+});
 
 const toggleBulkEditMode = async ($event: Event) => {
   if (!bulkEditMode.value && Fairmode.value && $event.target instanceof HTMLElement) {

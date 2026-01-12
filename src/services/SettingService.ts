@@ -39,8 +39,8 @@ export const CongratulationSounds: Ref<{ label: string; items: AudioSetting[] }[
   {
     label: 'Sound Effect',
     items: [
-      { label: 'TA-DA!', value: 'tada-fanfare-a-6313.mp3' },
       { label: 'Crowd Cheering', value: 'crowd-cheering-143103.mp3' },
+      { label: 'TA-DA!', value: 'tada-fanfare-a-6313.mp3' },
       { label: 'Bicycle Horn', value: 'bicycle-horn-7126.mp3' },
       { label: 'DJ Airhorn Sound', value: 'dj-airhorn-sound-39405.mp3' }
     ]
@@ -66,6 +66,10 @@ export const CongratulationSounds: Ref<{ label: string; items: AudioSetting[] }[
 export const LabelLength = ref<number>(0.75);
 
 export const Fairmode = ref<boolean>(false);
+export const SelectedWinner = ref<string | undefined>();
+
+// Spin duration in seconds
+export const SpinDuration = ref<number>(10);
 
 export class SettingService {
   private db: PouchDB.Database<ISetting> = new PouchDB('setting');
@@ -80,6 +84,33 @@ export class SettingService {
     await this.initTickSound();
     await this.initCongratulationSound();
     await this.initFairmode();
+    await this.initSpinDuration();
+    await this.initSelectedWinner();
+  };
+
+  private clampSpinDuration = (value: number | undefined | null): number => {
+    const v = typeof value === 'number' && !isNaN(value) ? value : 10;
+    return Math.min(60, Math.max(5, v));
+  };
+
+  private initSelectedWinner = async () => {
+    try {
+      SelectedWinner.value = (await this.getSetting('selectedWinner')).value;
+    } catch (e) {
+      SelectedWinner.value = undefined;
+      // Don't await
+      this.addSetting({ key: 'selectedWinner', value: SelectedWinner.value });
+    }
+
+    watch(SelectedWinner, async (newValue) => {
+      try {
+        const doc = await this.getSetting('selectedWinner');
+        doc.value = newValue;
+        await this.updateSetting(doc);
+      } catch (e) {
+        await this.addSetting({ key: 'selectedWinner', value: newValue });
+      }
+    });
   };
 
   private prefetchAudio = (audioSetting: AudioSetting | undefined) => {
@@ -97,6 +128,29 @@ export class SettingService {
     // Actively preload audio files
     const audio = new Audio(src);
     audio.preload = 'auto';
+  };
+
+  private initSpinDuration = async () => {
+    try {
+      SpinDuration.value = this.clampSpinDuration((await this.getSetting('spinDuration')).value);
+    } catch (e) {
+      SpinDuration.value = 10;
+      // Don't await
+      this.addSetting({ key: 'spinDuration', value: SpinDuration.value });
+    }
+
+    watch(SpinDuration, async (newValue) => {
+      const clamped = this.clampSpinDuration(newValue);
+      SpinDuration.value = clamped;
+
+      try {
+        const doc = await this.getSetting('spinDuration');
+        doc.value = clamped;
+        await this.updateSetting(doc, true);
+      } catch (e) {
+        await this.addSetting({ key: 'spinDuration', value: clamped });
+      }
+    });
   };
 
   private initLabelLength = async () => {
